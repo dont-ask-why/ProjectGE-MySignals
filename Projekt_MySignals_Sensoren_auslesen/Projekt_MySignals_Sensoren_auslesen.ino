@@ -14,8 +14,8 @@ UTouch  myTouch(TOUCH_CLK,TOUCH_CS,TOUCH_DIN,TOUCH_DOUT,TOUCH_IRQ);
 #define FOREGROUND_SELECT ILI9341_GREEN
 #define TEXT ILI9341_WHITE
 #define BACKGROUND ILI9341_WHITE
-volatile int currentWindow = 2;
-volatile int newWindow = 2;
+volatile int currentWindow = 1;
+volatile int newWindow = 1;
 
 //definition of encoder constants (for pins) and variables
 #define encoderPinA 18
@@ -103,23 +103,24 @@ void resetGUI(boolean resetFully, int window){
     tft.fillRect(112, 6, 96, 50, FOREGROUND);
     tft.fillRect(218, 6, 96, 50, FOREGROUND);
     tft.setTextColor(TEXT);
-    tft.drawString("Pulseoxi", 16, 14, 2);
-    tft.drawString("Meter", 16, 28, 2);
-    tft.drawString("Electro", 122, 14, 2);
-    tft.drawString("Myography", 122, 28, 2);
-    tft.drawString("THIRD", 228, 14, 2);
-    tft.drawString("WINDOW", 228, 28, 2);
+    tft.drawString("Body Postion", 16, 14, 2);
+    tft.drawString("Sensor", 16, 28, 2);
+    tft.drawString("Electromyo-", 122, 14, 2);
+    tft.drawString("graphy", 122, 28, 2);
+    tft.drawString("Information", 228, 14, 2);
+    tft.drawString("Page", 228, 28, 2);  
   }
   switch(window){
     case 1:
-      tft.fillRect(6, 66, 151, 168, FOREGROUND);
-      tft.fillRect(163, 66, 151, 168, FOREGROUND);
+      tft.fillRect(6, 66, 202, 168, FOREGROUND);
+      tft.fillRect(218, 66, 96, 168, FOREGROUND);
       break;
     case 2:
       tft.fillRect(6, 66, 202, 168, FOREGROUND);
       tft.fillRect(218, 66, 96, 168, FOREGROUND);
       break;
     case 3:
+    tft.fillRect(6, 66, 308, 168, FOREGROUND);
       break;
   }
 }
@@ -128,24 +129,27 @@ void resetGUI(boolean resetFully, int window){
 void selectWindow1(){
   resetGUI(true, 1);
   tft.fillRect(6, 6, 96, 50, FOREGROUND_SELECT);
-  tft.drawString("Pulseoxi", 16, 14, 2);
-  tft.drawString("Meter", 16, 28, 2);
+  tft.setTextColor(FOREGROUND);
+  tft.drawString("Body Postion", 16, 14, 2);
+  tft.drawString("Sensor", 16, 28, 2);
 }
 
 //sets the screen up for the second (center) window
 void selectWindow2(){
   resetGUI(true, 2);
   tft.fillRect(112, 6, 96, 50, FOREGROUND_SELECT);
-  tft.drawString("Electro", 122, 14, 2);
-  tft.drawString("Myography", 122, 28, 2);
+  tft.setTextColor(FOREGROUND);
+  tft.drawString("Electromyo-", 122, 14, 2);
+  tft.drawString("graphy", 122, 28, 2);
 }
 
 //sets the screen up for the thrid (right) window
 void selectWindow3(){
   resetGUI(true, 3);
   tft.fillRect(218, 6, 96, 50, FOREGROUND_SELECT);
-  tft.drawString("THIRD", 228, 14, 2);
-  tft.drawString("WINDOW", 228, 28, 2);  
+  tft.setTextColor(FOREGROUND);
+  tft.drawString("Information", 228, 14, 2);
+  tft.drawString("Page", 228, 28, 2);  
 }
 
 //goes one window to the left, but only if the leftmost window has not been reached
@@ -162,14 +166,12 @@ void goToWindowToTheRight(){
   }  
 }
 
-//loop for the pulseoximeter in the first window
-
+//loop for the body postion sensor in the first window
 void loopWindow1(){
-  //currently no loop required
+  //No loop necessary, look in rareRefreshWindow1()
 }
 
-//loop for the sensor in the second window
-
+//loop for the EMG-Graph in the second window
 uint16_t emgRead;
 void loopWindow2(){
   emgRead = (uint16_t)MySignals.getEMG(DATA);
@@ -178,33 +180,31 @@ void loopWindow2(){
   //TODO
 }
 
-//loop for the third sensor (sensor or information page?)
+//loop for the information page
 void loopWindow3(){
-  //TODO
+  //No loop necessary, information is plotted at the start and never refreshed
 }
 
-//loop for any Strings that have to be refreshed for the pulseoximeter in the first window
+//loop for any Strings that have to be refreshed for the body position window in the first window
 void rareRefreshWindow1(){
-  //TODO
+  resetGUI(false, 1);
 }
 
 //loop for any Strings that have to be refreshed for the sensor in the second window
 void rareRefreshWindow2(){
   //TODO
   tft.setTextColor(TEXT);
-  tft.drawString("LOL", 122, 14, 2);
+  tft.drawString("LOL", 218, 66, 4);
 }
 
-//loop for any Strings that have to be refreshed for the sensor in the third window
+//rare loop for the information page
 void rareRefreshWindow3(){
-  //TODO
-  
+  //No code necessary
 }
 
 //setup for the code, original Arduino method required to run the program
 void setup() {
   //setup encoder
-  Serial.begin(115200);
   pinMode(encoderPinA, INPUT_PULLUP);
   pinMode(encoderPinB, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(18), doEncoderA, CHANGE);
@@ -219,7 +219,7 @@ void setup() {
   tft.init();
   tft.setRotation(3);
   resetGUI(true, 1);
-  selectWindow2();
+  selectWindow1();
 }
 
 /*
@@ -228,6 +228,8 @@ void setup() {
  */
 void loop() {
   if(newWindow != currentWindow){
+    flickerReduction = 0;
+    graphic_x = graphic_left_extrem;
     switch (newWindow){
       case 1:
         currentWindow = 1;
@@ -278,6 +280,7 @@ void loop() {
   }
   delay(1);
 }
+
 
 /*
  * TODO
