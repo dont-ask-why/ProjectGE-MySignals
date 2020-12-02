@@ -14,8 +14,8 @@ UTouch  myTouch(TOUCH_CLK,TOUCH_CS,TOUCH_DIN,TOUCH_DOUT,TOUCH_IRQ);
 #define FOREGROUND_SELECT ILI9341_GREEN
 #define TEXT ILI9341_WHITE
 #define BACKGROUND ILI9341_WHITE
-volatile int currentWindow = 1;
-volatile int newWindow = 1;
+volatile int currentWindow = 2;
+volatile int newWindow = 2;
 
 //definition of encoder constants (for pins) and variables
 #define encoderPinA 18
@@ -26,10 +26,10 @@ boolean A_set = false;
 boolean B_set = false;
 
 //variables for the graph
-#define graphic_low_extrem 234
+#define graphic_low_extrem 233
 #define graphic_high_extrem 66
 #define graphic_left_extrem 6
-#define graphic_right_extrem 208
+#define graphic_right_extrem 206
 int flickerReduction = 0;
 uint16_t graphic_x = graphic_left_extrem;
 uint16_t valRead; 
@@ -48,16 +48,15 @@ void printGraphic(uint16_t value, uint8_t delay_time)
   }
   //Pinta la linea solo a partir de que ya exista al menos 1 valor
   if (graphic_x > graphic_left_extrem + 1){
-    tft.drawLine(graphic_x - 1, graphic_prevRead, graphic_x, value, ILI9341_RED);
+    tft.drawLine(graphic_x - 1, graphic_prevRead, graphic_x, value, FOREGROUND_SELECT);
   }
   //Wave refresh (barre pantalla pintando una linea)
-  tft.drawLine(graphic_x + 1, graphic_high_extrem, graphic_x + 1, graphic_low_extrem, ILI9341_WHITE);
+  tft.drawLine(graphic_x + 1, graphic_high_extrem, graphic_x + 1, graphic_low_extrem, FOREGROUND);
   graphic_prevRead = value;
   graphic_x++;
   delay(delay_time);
   if (graphic_x == graphic_right_extrem){
     graphic_x = graphic_left_extrem;
-    flickerReduction = 0;
   }
   SPI.end();
 }
@@ -106,8 +105,8 @@ void resetGUI(boolean resetFully, int window){
     tft.setTextColor(TEXT);
     tft.drawString("Pulseoxi", 16, 14, 2);
     tft.drawString("Meter", 16, 28, 2);
-    tft.drawString("SECOND", 122, 14, 2);
-    tft.drawString("WINDOW", 122, 28, 2);
+    tft.drawString("Electro", 122, 14, 2);
+    tft.drawString("Myography", 122, 28, 2);
     tft.drawString("THIRD", 228, 14, 2);
     tft.drawString("WINDOW", 228, 28, 2);
   }
@@ -137,8 +136,8 @@ void selectWindow1(){
 void selectWindow2(){
   resetGUI(true, 2);
   tft.fillRect(112, 6, 96, 50, FOREGROUND_SELECT);
-  tft.drawString("SECOND", 122, 14, 2);
-  tft.drawString("WINDOW", 122, 28, 2);
+  tft.drawString("Electro", 122, 14, 2);
+  tft.drawString("Myography", 122, 28, 2);
 }
 
 //sets the screen up for the thrid (right) window
@@ -164,12 +163,18 @@ void goToWindowToTheRight(){
 }
 
 //loop for the pulseoximeter in the first window
+
 void loopWindow1(){
   //currently no loop required
 }
 
 //loop for the sensor in the second window
+
+uint16_t emgRead;
 void loopWindow2(){
+  emgRead = (uint16_t)MySignals.getEMG(DATA);
+  emgRead = map(emgRead, 100, 600, 234, 66);
+  printGraphic(emgRead,0);
   //TODO
 }
 
@@ -180,34 +185,26 @@ void loopWindow3(){
 
 //loop for any Strings that have to be refreshed for the pulseoximeter in the first window
 void rareRefreshWindow1(){
-  uint16_t pulseVal = -1;
-  uint16_t satVal = -1;
-  
-  resetGUI(false, 1);
-  tft.drawString("BPM:", 16, 76, 4);
-  tft.drawString("O2:", 173, 76, 4);
-  tft.drawNumber((int)pulseVal, 26, 96, 4);
-  tft.drawNumber((int)satVal, 183, 96, 4);
-  Serial.print("Heart rate:");
-  Serial.print(pulseVal);
-  Serial.print("bpm / SpO2:");
-  Serial.print(satVal);
-  Serial.println("%");
+  //TODO
 }
 
 //loop for any Strings that have to be refreshed for the sensor in the second window
 void rareRefreshWindow2(){
   //TODO
+  tft.setTextColor(TEXT);
+  tft.drawString("LOL", 122, 14, 2);
 }
 
 //loop for any Strings that have to be refreshed for the sensor in the third window
 void rareRefreshWindow3(){
   //TODO
+  
 }
 
 //setup for the code, original Arduino method required to run the program
 void setup() {
   //setup encoder
+  Serial.begin(115200);
   pinMode(encoderPinA, INPUT_PULLUP);
   pinMode(encoderPinB, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(18), doEncoderA, CHANGE);
@@ -222,7 +219,7 @@ void setup() {
   tft.init();
   tft.setRotation(3);
   resetGUI(true, 1);
-  selectWindow1();
+  selectWindow2();
 }
 
 /*
@@ -261,7 +258,7 @@ void loop() {
     default:
       break;
   }
-  if(flickerReduction == graphic_right_extrem-graphic_left_extrem){
+  if(flickerReduction == 199){
     flickerReduction = 0;
     switch (currentWindow){
       case 1:
@@ -277,7 +274,7 @@ void loop() {
         break;
     }
   } else {
-    flickerReduction++;  
+    flickerReduction++; 
   }
   delay(1);
 }
