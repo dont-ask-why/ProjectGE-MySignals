@@ -35,6 +35,33 @@ uint16_t graphic_x = graphic_left_extrem;
 uint16_t valRead; 
 uint16_t graphic_prevRead;
 
+char* getBodyPositionText(){
+  uint8_t position = MySignals.getBodyPosition(); 
+  switch (position){
+    case 0:
+      return "Test";
+      break;
+    case 1:
+      return "Auf dem Bauch liegend";
+      break;
+    case 5:
+      return "Stehend";
+      break;
+    case 2:
+      return "Auf der linken Seite";
+      break;
+    case 3:
+      return "Auf der rechten Seite";
+      break;
+    case 4:
+      return "Auf dem Ruecken liegend";
+      break;
+    case 6:
+      return "Unbekannte Position";
+      break;
+  }
+}
+
 /*
  * prints the grapic - method originates from a MySignals example project
  */
@@ -188,13 +215,13 @@ void loopWindow3(){
 //loop for any Strings that have to be refreshed for the body position window in the first window
 void rareRefreshWindow1(){
   resetGUI(false, 1);
+  tft.setTextColor(TEXT);
+  tft.drawString(getBodyPositionText(), 8, 66, 2);
 }
 
 //loop for any Strings that have to be refreshed for the sensor in the second window
 void rareRefreshWindow2(){
   //TODO
-  tft.setTextColor(TEXT);
-  tft.drawString("LOL", 218, 66, 4);
 }
 
 //rare loop for the information page
