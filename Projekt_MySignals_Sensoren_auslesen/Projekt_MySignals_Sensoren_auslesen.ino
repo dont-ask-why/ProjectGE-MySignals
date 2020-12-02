@@ -88,6 +88,58 @@ void printGraphic(uint16_t value, uint8_t delay_time)
   SPI.end();
 }
 
+/*
+ * @para scale Chooses the current light on the traffic light. 0 for green, 1 for yellow, 2 for red
+ * @para window Chooses which window to take
+ */
+void showTrafficLight(int scale, int window){
+    switch (scale){
+      case 0:
+        tft.fillCircle(233, 98, 10, 0x4000);
+        tft.fillCircle(233, 150, 10, 0x4220);
+        tft.fillCircle(233, 202, 10, 0x0FE0);
+      case 1:
+        tft.fillCircle(233, 98, 10, 0x4000);
+        tft.fillCircle(233, 150, 10, 0xEFE0);
+        tft.fillCircle(233, 202, 10, 0x0220);
+        break;
+      case 2:
+        tft.fillCircle(233, 98, 10, 0xF800);
+        tft.fillCircle(233, 150, 10, 0x4220);
+        tft.fillCircle(233, 202, 10, 0x0220);
+        break;
+      default:
+        break;
+    }
+    tft.setTextColor(TEXT);
+    switch (window){
+      case 1:
+        tft.drawString("Position", 250, 80, 2);
+        tft.drawString("is", 250, 90, 2);
+        tft.drawString("critical", 250, 100, 2);
+        tft.drawString("Position", 250, 132, 2);
+        tft.drawString("is", 250, 142, 2);
+        tft.drawString("untypical", 250, 152, 2);
+        tft.drawString("Position", 250, 184, 2);
+        tft.drawString("is", 250, 194, 2);
+        tft.drawString("normal", 250, 204, 2);
+        break;
+      case 2:
+        tft.drawString("Muscle", 250, 80, 2);
+        tft.drawString("Activity", 250, 90, 2);
+        tft.drawString("is high", 250, 100, 2);
+        tft.drawString("Muscle", 250, 132, 2);
+        tft.drawString("Activity", 250, 142, 2);
+        tft.drawString("is present", 250, 152, 2);
+        tft.drawString("Muscle", 250, 184, 2);
+        tft.drawString("Activity", 250, 194, 2);
+        tft.drawString("is low", 250, 204, 2);
+        break;
+      default:
+        break;
+    }
+}
+
 //Interrupt method for clockwise motion on the encoder
 void doEncoderA() {
   delay(1);
@@ -307,7 +359,6 @@ void loop() {
   }
   delay(1);
 }
-
 
 /*
  * TODO
