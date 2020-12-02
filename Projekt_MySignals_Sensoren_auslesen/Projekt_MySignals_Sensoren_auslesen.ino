@@ -42,22 +42,28 @@ char* getBodyPositionText(){
       return "Test";
       break;
     case 1:
+      showTrafficLight(1,1);
       return "Auf dem Bauch liegend";
       break;
     case 5:
+      showTrafficLight(2,1);
       return "Stehend";
       break;
     case 2:
+      showTrafficLight(1,1);
       return "Auf der linken Seite";
       break;
     case 3:
+      showTrafficLight(1,1);
       return "Auf der rechten Seite";
       break;
     case 4:
+      showTrafficLight(0,1);
       return "Auf dem Ruecken liegend";
       break;
     case 6:
-      return "Unbekannte Position";
+      showTrafficLight(2,1);
+      return "Unbekannte Position (WTF?)";
       break;
   }
 }
@@ -98,6 +104,7 @@ void showTrafficLight(int scale, int window){
         tft.fillCircle(233, 98, 10, 0x4000);
         tft.fillCircle(233, 150, 10, 0x4220);
         tft.fillCircle(233, 202, 10, 0x0FE0);
+        break;
       case 1:
         tft.fillCircle(233, 98, 10, 0x4000);
         tft.fillCircle(233, 150, 10, 0xEFE0);
