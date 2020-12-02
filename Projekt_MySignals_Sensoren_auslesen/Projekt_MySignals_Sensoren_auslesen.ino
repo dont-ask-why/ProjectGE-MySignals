@@ -235,6 +235,21 @@ void selectWindow3(){
   tft.fillRect(218, 6, 96, 50, FOREGROUND_SELECT);
   tft.setTextColor(FOREGROUND);
   tft.drawString("Information", 228, 14, 2);
+  tft.drawString("Page", 228, 28, 2);
+  resetGUI(false, 3);
+  tft.setTextColor(TEXT);
+  tft.drawString("Information Page", 13, 71, 4);
+  tft.drawString("Created by:", 15, 90, 2);
+  tft.drawString("    Till Moehring", 15, 105, 2);
+  tft.drawString("    Ivo Opitz", 15, 120, 2);
+  tft.drawString("Version Beta 4.592.1.02.12", 15, 150, 2);
+}
+//sets the screen up for the thrid (right) window
+void selectWindow3(){
+  resetGUI(true, 3);
+  tft.fillRect(218, 6, 96, 50, FOREGROUND_SELECT);
+  tft.setTextColor(FOREGROUND);
+  tft.drawString("Information", 228, 14, 2);
   tft.drawString("Page", 228, 28, 2);  
 }
 
@@ -369,7 +384,5 @@ void loop() {
 
 /*
  * TODO
- * Create the loop function for all three windows.
- * Import the graph function from MySignals.
- * Create link to the sensors and choose which to read (temperature, pulseoximeter, ...)
+ * Create traffic light connection for EMG
  */
