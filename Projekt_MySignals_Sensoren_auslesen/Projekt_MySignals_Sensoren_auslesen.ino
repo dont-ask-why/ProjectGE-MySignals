@@ -1,3 +1,4 @@
+//imnport of any necessary libraries
 #include <Adafruit_GFX_AS.h>
 #include <Adafruit_ILI9341_AS.h>
 #include <UTouch.h>
@@ -6,7 +7,7 @@
 #include <Wire.h>
 #include <SPI.h>
 
-//definition of touchscreen variables and constants
+//definition of screen variables and constants
 Adafruit_ILI9341_AS tft = Adafruit_ILI9341_AS(TFT_CS, TFT_DC);
 //Adafruit_ILI9341_AS tft = Adafruit_ILI9341_AS(53, 49);
 UTouch  myTouch(TOUCH_CLK,TOUCH_CS,TOUCH_DIN,TOUCH_DOUT,TOUCH_IRQ);
@@ -25,7 +26,7 @@ unsigned int lastReportedPos = 1;
 boolean A_set = false;
 boolean B_set = false;
 
-//variables for the graph
+//variables for the graph in the second window
 #define graphic_low_extrem 233
 #define graphic_high_extrem 66
 #define graphic_left_extrem 6
@@ -35,6 +36,11 @@ uint16_t graphic_x = graphic_left_extrem;
 uint16_t valRead; 
 uint16_t graphic_prevRead;
 
+/*
+ * Function to get the text which is to be printed
+ * in the window for the body position sensor.
+ * @returns char array for immediate use in the tft.printString function
+ */
 char* getBodyPositionText(){
   uint8_t position = MySignals.getBodyPosition(); 
   switch (position){
@@ -95,8 +101,8 @@ void printGraphic(uint16_t value, uint8_t delay_time)
 }
 
 /*
- * @para scale Chooses the current light on the traffic light. 0 for green, 1 for yellow, 2 for red
- * @para window Chooses which window to take
+ * @param scale  Chooses the current light on the traffic light. 0 for green, 1 for yellow, 2 for red.
+ * @param window Chooses which windows specifications to use. 1 for left, 2 for center.
  */
 void showTrafficLight(int scale, int window){
     switch (scale){
@@ -178,9 +184,9 @@ void doEncoderB() {
 }
 
 /*
- * Resets the part of the screen for the sensors (draws over any changes by one of the windows itself).
+ * Resets the part of the screen for the sensors meaing it draws over any changes done by one of the windows on itself.
  * @param If resetFully is true, the menu bar is also reset.
- * @param Choose which window is beeing reset, possible values are 1 2 and 3
+ * @param Choose which window is beeing reset, possible values are 1 (left), 2 (center) and 3 (right). Other values do not change anything.
  */
 void resetGUI(boolean resetFully, int window){
   if(resetFully){
@@ -211,7 +217,9 @@ void resetGUI(boolean resetFully, int window){
   }
 }
 
-//sets the screen up for the first (left) window
+/*
+ * Sets the screen up for the first (left) window.
+ */
 void selectWindow1(){
   resetGUI(true, 1);
   tft.fillRect(6, 6, 96, 50, FOREGROUND_SELECT);
@@ -220,7 +228,9 @@ void selectWindow1(){
   tft.drawString("Sensor", 16, 28, 2);
 }
 
-//sets the screen up for the second (center) window
+/*
+ * Sets the screen up for the second (center) window.
+ */
 void selectWindow2(){
   resetGUI(true, 2);
   tft.fillRect(112, 6, 96, 50, FOREGROUND_SELECT);
@@ -229,14 +239,11 @@ void selectWindow2(){
   tft.drawString("graphy", 122, 28, 2);
 }
 
-//sets the screen up for the thrid (right) window
+/*
+ * Sets the screen up for the thrid (right) window.
+ */
 void selectWindow3(){
   resetGUI(true, 3);
-  tft.fillRect(218, 6, 96, 50, FOREGROUND_SELECT);
-  tft.setTextColor(FOREGROUND);
-  tft.drawString("Information", 228, 14, 2);
-  tft.drawString("Page", 228, 28, 2);
-  resetGUI(false, 3);
   tft.setTextColor(TEXT);
   tft.drawString("Information Page", 13, 71, 4);
   tft.drawString("Created by:", 15, 90, 2);
@@ -244,49 +251,55 @@ void selectWindow3(){
   tft.drawString("    Ivo Opitz", 15, 120, 2);
   tft.drawString("Version Beta 4.592.1.02.12", 15, 150, 2);
 }
-//sets the screen up for the thrid (right) window
-void selectWindow3(){
-  resetGUI(true, 3);
-  tft.fillRect(218, 6, 96, 50, FOREGROUND_SELECT);
-  tft.setTextColor(FOREGROUND);
-  tft.drawString("Information", 228, 14, 2);
-  tft.drawString("Page", 228, 28, 2);  
-}
 
-//goes one window to the left, but only if the leftmost window has not been reached
+/*
+ * Goes one window to the left, but only if the leftmost window has not been reached
+ */
 void goToWindowToTheLeft(){
   if(currentWindow > 1){
     newWindow--;  
   }  
 }
 
-//goes one window to the right, but only if the rightmost window has not been reached
+/*
+ * Goes one window to the right, but only if the rightmost window has not been reached
+ */
 void goToWindowToTheRight(){
   if(currentWindow < 3){
     newWindow++;  
   }  
 }
 
-//loop for the body postion sensor in the first window
+/*
+ * @deprecated
+ * Loop for the body postion sensor in the first window
+ */
 void loopWindow1(){
-  //No loop necessary, look in rareRefreshWindow1()
+  //No loop necessary, look in rareRefreshWindow1() - can be removed
 }
 
-//loop for the EMG-Graph in the second window
-uint16_t emgRead;
+/*
+ * Loop for the EMG-Graph in the second window
+ */
 void loopWindow2(){
+  uint16_t emgRead;
   emgRead = (uint16_t)MySignals.getEMG(DATA);
   emgRead = map(emgRead, 100, 600, 234, 66);
   printGraphic(emgRead,0);
-  //TODO
+  //@TODO logic for the traffic light of the muscular activity
 }
 
-//loop for the information page
+/*
+ * @deprecated 
+ * Loop for the information page
+ */
 void loopWindow3(){
   //No loop necessary, information is plotted at the start and never refreshed
 }
 
-//loop for any Strings that have to be refreshed for the body position window in the first window
+/*
+ * Loop for any Strings that have to be refreshed for the body position window in the first window.
+ */
 void rareRefreshWindow1(){
   resetGUI(false, 1);
   tft.setTextColor(TEXT);
@@ -295,17 +308,21 @@ void rareRefreshWindow1(){
 
 //loop for any Strings that have to be refreshed for the sensor in the second window
 void rareRefreshWindow2(){
-  //TODO
+  //@TODO - traffic light has to be implemented
 }
 
-//rare loop for the information page
+/*
+ * @deprecated
+ */
 void rareRefreshWindow3(){
   //No code necessary
 }
 
-//setup for the code, original Arduino method required to run the program
+/*
+ * setup for the code, original Arduino method required to run the program
+ */
 void setup() {
-  //setup encoder
+  //setup rotary encoder
   pinMode(encoderPinA, INPUT_PULLUP);
   pinMode(encoderPinB, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(18), doEncoderA, CHANGE);
@@ -324,10 +341,11 @@ void setup() {
 }
 
 /*
- * loop, original method from Arduino required to run the program.
- * Checks if the window has to be changed and runs the loop functions for the 3 windows according to which is currently selected
+ * Loop, original method from Arduino required to run the program.
+ * Checks if the window has to be changed and runs the loop and rareRefresh functions for the 3 windows according to which is currently selected.
  */
 void loop() {
+  // Logic to change the window if necessary
   if(newWindow != currentWindow){
     flickerReduction = 0;
     graphic_x = graphic_left_extrem;
@@ -348,6 +366,7 @@ void loop() {
         break;
     }
   }
+  // Executes the loop function corresponding to the selected window 
   switch (currentWindow){
     case 1:
       loopWindow1();
@@ -361,6 +380,10 @@ void loop() {
     default:
       break;
   }
+  /*
+   * Run relevant rareRefresh function but only if the graph from the second window is at the end of its panel
+   * This exakt value is not necessary for the first and thrid window but works well to stop flickering in all three windows.
+   */
   if(flickerReduction == 199){
     flickerReduction = 0;
     switch (currentWindow){
@@ -385,4 +408,6 @@ void loop() {
 /*
  * TODO
  * Create traffic light connection for EMG
+ * Create global traffic light connection
+ * Currently on pause due to corona pandemic circumstances: look in the Home_Version for new developments
  */
