@@ -76,6 +76,8 @@ char* getBodyPositionText(){
 
 /*
  * prints the grapic - method originates from a MySignals example project
+ * @param value      value which is to be added to the plot
+ * @param delay_time in all example project (and ours as well) set to 0, delay can slow speed of graph
  */
 void printGraphic(uint16_t value, uint8_t delay_time)
 {
@@ -275,7 +277,7 @@ void goToWindowToTheRight(){
  * Loop for the body postion sensor in the first window
  */
 void loopWindow1(){
-  //No loop necessary, look in rareRefreshWindow1() - can be removed
+  //No loop necessary (yet?), look in rareRefreshWindow1() for what happens in the left window
 }
 
 /*
@@ -294,7 +296,7 @@ void loopWindow2(){
  * Loop for the information page
  */
 void loopWindow3(){
-  //No loop necessary, information is plotted at the start and never refreshed
+  //No loop necessary, information is plotted at the start and never refreshed. Look in selectWindow3() for the code necessary.
 }
 
 /*
@@ -312,6 +314,7 @@ void rareRefreshWindow2(){
 }
 
 /*
+ * rare loop for the information page
  * @deprecated
  */
 void rareRefreshWindow3(){
@@ -319,7 +322,8 @@ void rareRefreshWindow3(){
 }
 
 /*
- * setup for the code, original Arduino method required to run the program
+ * setup() is an original Arduino method required to run the program.
+ * Only called once at the start of the program.
  */
 void setup() {
   //setup rotary encoder
@@ -341,8 +345,8 @@ void setup() {
 }
 
 /*
- * Loop, original method from Arduino required to run the program.
- * Checks if the window has to be changed and runs the loop and rareRefresh functions for the 3 windows according to which is currently selected.
+ * loop() is an original method from Arduino required to run the program.
+ * Called periodically to apply any changes in the selected window by calling the corresponding loop function.
  */
 void loop() {
   // Logic to change the window if necessary
