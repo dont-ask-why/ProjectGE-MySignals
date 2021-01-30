@@ -13,7 +13,8 @@ Um weiter an dem Projekt zu arbeiten, wurde der Code geportet um nicht mehr vom 
 - Aktuell ungenutzt; Idee sind ein Gyroskop oder ein Pulsoximeter
 - Electrcardiograph
 - Informationen
-Um das Projekt einfacher umsetzen zu können, wurde eine eigens erstellte Platine verwendet. Diese dient der besseren Struktur der Verkabelung.
+Um das Projekt einfacher umsetzen zu können, wurde eine zuvor selbst erstellte Platine verwendet. Diese dient der besseren Struktur der Verkabelung.
+Die Potentiometer auf der Platine dienen um den Graphen entlang der x-Achse zu skalieren und entlang der y-Achse zu skalieren und zu verschieben.
 ### Bild der "Home Version"
 ![Beispielhafter Aufbau](https://github.com/dont-ask-why/ProjectGE-MySignals/blob/main/Home_Version_Example.png)
 ## ToDo
