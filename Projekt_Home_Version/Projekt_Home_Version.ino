@@ -1,15 +1,19 @@
-//necessary libraries for the project, mostly to connect to the screen
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <MCUFRIEND_kbv.h>
 #include <stdint.h>
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
+//#include <UTouch.h>
+//#include <MySignals.h>
+//#include <MySignals_BLE.h>
 #include <Wire.h>
 #include <SPI.h>
 
 //definition of touchscreen variables and constants
 MCUFRIEND_kbv tft;
+//Adafruit_ILI9341_AS tft = Adafruit_ILI9341_AS(53, 49);
+//UTouch  myTouch(TOUCH_CLK,TOUCH_CS,TOUCH_DIN,TOUCH_DOUT,TOUCH_IRQ);
 #define FOREGROUND ILI9341_BLACK
 #define FOREGROUND_SELECT ILI9341_GREEN
 #define TEXT ILI9341_WHITE
@@ -18,30 +22,68 @@ volatile int currentWindow = 1;
 volatile int newWindow = 1;
 
 //definition of encoder constants (for pins) and variables
-#define encoderPinA 19
-#define encoderPinB 18
+#define ENCODER_PIN_A 19
+#define ENCODER_PIN_B 18
 volatile unsigned int encoderPos = 0;
 unsigned int lastReportedPos = 1;
 boolean A_set = false;
 boolean B_set = false;
 
-//variables for the graph
-#define ecgPin A10
+//pin definitions for the graph
+#define ECG_PIN A10
+#define X_AXIS_PIN A15
+#define Y_AXIS_PIN_A A13
+#define Y_AXIS_PIN_B A14
+#define ECG_CONTROL_PIN_A 50
+#define ECG_CONTROL_PIN_B 51
+//variable definitions for the graph
 #define graphic_low_extrem 233
 #define graphic_high_extrem 66
 #define graphic_left_extrem 6
 #define graphic_right_extrem 206
 int flickerReduction = 0;
 uint16_t graphic_x = graphic_left_extrem;
-uint16_t valRead; 
 uint16_t graphic_prevRead;
 uint16_t prevEcgValue0 = 0;
 uint16_t prevEcgValue1 = 0;
 
+char* getBodyPositionText(){
+  //uint8_t position = MySignals.getBodyPosition();
+  uint8_t position = random(0, 6);
+  switch (position){
+    case 0:
+      return "Test";
+      break;
+    case 1:
+      showTrafficLight(1,1);
+      return "Auf dem Bauch liegend";
+      break;
+    case 5:
+      showTrafficLight(2,1);
+      return "Stehend";
+      break;
+    case 2:
+      showTrafficLight(1,1);
+      return "Auf der linken Seite";
+      break;
+    case 3:
+      showTrafficLight(1,1);
+      return "Auf der rechten Seite";
+      break;
+    case 4:
+      showTrafficLight(0,1);
+      return "Auf dem Ruecken liegend";
+      break;
+    case 6:
+      showTrafficLight(2,1);
+      return "Unbekannte Position (WTF?)";
+      break;
+  }
+}
+
+
 /*
  * prints the grapic - method originates from a MySignals example project
- * @param value      value which is to be added to the plot
- * @param delay_time in all example project (and ours as well) set to 0, delay can slow speed of graph
  */
 void printGraphic(uint16_t value, uint8_t delay_time)
 {
@@ -67,8 +109,8 @@ void printGraphic(uint16_t value, uint8_t delay_time)
 }
 
 /*
- * @param scale  Chooses the current light on the traffic light. 0 for green, 1 for yellow, 2 for red.
- * @param window Chooses which windows specifications to use. 1 for left, 2 for center.
+ * @para scale Chooses the current light on the traffic light. 0 for green, 1 for yellow, 2 for red
+ * @para window Chooses which window to take
  */
 void showTrafficLight(int scale, int window){
     switch (scale){
@@ -93,7 +135,6 @@ void showTrafficLight(int scale, int window){
     tft.setTextColor(TEXT);
     switch (window){
       case 1:
-        //Currently not in use
         drawString("Position", 250, 76, 2);
         drawString("is", 250, 90, 2);
         drawString("critical", 250, 104, 2);
@@ -105,7 +146,6 @@ void showTrafficLight(int scale, int window){
         drawString("normal", 250, 208, 2);
         break;
       case 2:
-        //Deprecated, would now be used for ECG not EMG
         drawString("Muscle", 250, 80, 2);
         drawString("Activity", 250, 90, 2);
         drawString("is high", 250, 100, 2);
@@ -121,11 +161,11 @@ void showTrafficLight(int scale, int window){
     }
 }
 
-//Interrupt procedure for clockwise motion on the encoder, for rest see setup
+//Interrupt method for clockwise motion on the encoder
 void doEncoderA() {
   delay(1);
   
-  if( digitalRead(encoderPinA) != A_set ) {
+  if( digitalRead(ENCODER_PIN_A) != A_set ) {
     A_set = !A_set;
     if ( A_set && !B_set ){
       encoderPos += 1;
@@ -136,11 +176,11 @@ void doEncoderA() {
   }
 }
 
-//Interrupt procedure for counterclockwise motion on the encoder, for rest see setup
+//Interrupt method for counterclockwise motion on the encoder
 void doEncoderB() {
   delay(1);
   
-  if( digitalRead(encoderPinB) != B_set ){
+  if( digitalRead(ENCODER_PIN_B) != B_set ){
     B_set = !B_set;
     if( B_set && !A_set ){
       encoderPos -= 1;
@@ -151,36 +191,27 @@ void doEncoderB() {
   }
 }
 
-/*
- * Function to draw the "Body/nPosition/nSensor" text in the menu bar. Choose colour of text before calling function.
- */
 void drawBPS(){
   drawString("Body", 16, 5, 2);
   drawString("Postion", 16, 20, 2);
   drawString("Sensor", 16, 35, 2);
 }
 
-/*
- * Function to draw the "Electro/nCardio/nGraphy" text in the menu bar. Choose colour of text before calling function.
- */
 void drawECG(){
   drawString("Electro", 122, 5, 2);
   drawString("Cardio", 122, 20, 2);
   drawString("Graphy", 122, 35, 2);
 }
 
-/*
- * Function to draw the "Information/nPage" text in the menu bar. Choose colour of text before calling function.
- */
 void drawIP(){
   drawString("Information", 227, 13, 2);
   drawString("Page", 228, 29, 2); 
 }
 
 /*
- * Resets the part of the screen for the sensors meaing it draws over any changes done by one of the windows on itself.
+ * Resets the part of the screen for the sensors (draws over any changes by one of the windows itself).
  * @param If resetFully is true, the menu bar is also reset.
- * @param Choose which window is beeing reset, possible values are 1 (left), 2 (center) and 3 (right). Other values do not change anything.
+ * @param Choose which window is beeing reset, possible values are 1 2 and 3
  */
 void resetGUI(boolean resetFully, int window){
   if(resetFully){
@@ -208,9 +239,7 @@ void resetGUI(boolean resetFully, int window){
   }
 }
 
-/*
- * Sets the screen up for the first (left) window.
- */
+//sets the screen up for the first (left) window
 void selectWindow1(){
   resetGUI(true, 1);
   tft.fillRect(6, 6, 96, 50, FOREGROUND_SELECT);
@@ -218,9 +247,7 @@ void selectWindow1(){
   drawBPS();
 }
 
-/*
- * Sets the screen up for the second (center) window.
- */
+//sets the screen up for the second (center) window
 void selectWindow2(){
   resetGUI(true, 2);
   tft.fillRect(112, 6, 96, 50, FOREGROUND_SELECT);
@@ -228,9 +255,7 @@ void selectWindow2(){
   drawECG();
 }
 
-/*
- * Sets the screen up for the thrid (right) window.
- */
+//sets the screen up for the thrid (right) window
 void selectWindow3(){
   resetGUI(true, 3);
   tft.fillRect(218, 6, 96, 50, FOREGROUND_SELECT);
@@ -245,31 +270,20 @@ void selectWindow3(){
   drawString("Version Home v0.2", 17, 150, 2);
 }
 
-/*
- * Goes one window to the left, but only if the leftmost window has not been reached
- */
+//goes one window to the left, but only if the leftmost window has not been reached
 void goToWindowToTheLeft(){
   if(currentWindow > 1){
     newWindow--;  
   }  
 }
 
-/*
- * Goes one window to the right, but only if the rightmost window has not been reached
- */
+//goes one window to the right, but only if the rightmost window has not been reached
 void goToWindowToTheRight(){
   if(currentWindow < 3){
     newWindow++;  
   }  
 }
 
-/*
- * Draws the specified text.
- * @param text The text which is to be drawn.
- * @param x    x-Position of the cursor from which the text starts.
- * @param y    y-Position of the cursor from which the text starts.
- * @param size Size of the text. Accepted values are 2 for small text and 4 for large text.
- */
 void drawString(String text, int x, int y, int size){
   if(size == 2){
     tft.setFont(&FreeSans9pt7b);
@@ -281,37 +295,28 @@ void drawString(String text, int x, int y, int size){
   tft.print(text);
 }
 
-/*
- * @deprecated
- * Loop for the body postion sensor in the first window
- */
+//loop for the body postion sensor in the first window
 void loopWindow1(){
-  //No loop necessary (yet?), look in rareRefreshWindow1() for what happens in the left window
+  //No loop necessary, look in rareRefreshWindow1()
 }
 
-
-/*
- * Loop for the EMG-Graph in the second window
- */
+//loop for the ECG-Graph in the second window
+uint16_t ecgRead;
 void loopWindow2(){
-  uint16_t ecgRead;
-  if((digitalRead(50) == 1) || (digitalRead(51) == 1)){
-    printGraphic(map(512, analogRead(A13), analogRead(A14), 232, 66), 0);
+  if((digitalRead(ECG_CONTROL_PIN_A) == 1) || (digitalRead(ECG_CONTROL_PIN_B) == 1)){
+    printGraphic(map(512, analogRead(Y_AXIS_PIN_A), analogRead(Y_AXIS_PIN_B), 232, 66), 0);
   } else {
     prevEcgValue1 = prevEcgValue0;
-    prevEcgValue0 = map(analogRead(A10), analogRead(A13), analogRead(A14), 232, 66);
+    prevEcgValue0 = map(analogRead(ECG_PIN), analogRead(Y_AXIS_PIN_A), analogRead(Y_AXIS_PIN_B), 232, 66);
     ecgRead = ((prevEcgValue0 + prevEcgValue1) / 2);
     printGraphic(ecgRead,0);
   }
-  delay(analogRead(A15)/10);
+  delay(analogRead(X_AXIS_PIN)/10);
 }
 
-/*
- * @deprecated 
- * Loop for the information page
- */
+//loop for the information page
 void loopWindow3(){
-  //No loop necessary, information is plotted at the start and never refreshed. Look in selectWindow3() for the code necessary.
+  //No loop necessary, information is plotted at the start and never refreshed
 }
 
 //loop for any Strings that have to be refreshed for the body position window in the first window
@@ -321,33 +326,36 @@ void rareRefreshWindow1(){
   drawString(getBodyPositionText(), 15, 66, 2);
 }
 
-//loop for any Strings that have to be refreshed for the body position sensor in the second window
+//loop for any Strings that have to be refreshed for the sensor in the second window
 void rareRefreshWindow2(){
-  //@TODO - traffic light has to be implemented
+  //TODO
 }
 
-/*
- * rare loop for the information page
- * @deprecated
- */
+//rare loop for the information page
 void rareRefreshWindow3(){
   //No code necessary
 }
 
-/*
- * setup() is an original Arduino method required to run the program.
- * Only called once at the start of the program.
- */
+//setup for the code, original Arduino method required to run the program
 void setup() {
-  //setup rotary encoder, defining both pins A and B as pullup - if a connection between either A or B has been made, it's potential is pulled to GND
-  pinMode(encoderPinA, INPUT_PULLUP);
-  pinMode(encoderPinB, INPUT_PULLUP);
-  pinMode(50, INPUT);
+  //setup encoder
+  pinMode(ENCODER_PIN_A, INPUT_PULLUP);
+  pinMode(ENCODER_PIN_B, INPUT_PULLUP);
+  pinMode(ECG_CONTROL_PIN_A, INPUT);
+  pinMode(ECG_CONTROL_PIN_B, INPUT);
   pinMode(60, INPUT);
-  //basic interrupt attachments which call their associated procedures, both register a change in signal value as rise and fall can both appear while turning in same direction
-  attachInterrupt(digitalPinToInterrupt(18), doEncoderA, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(19), doEncoderB, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_PIN_A), doEncoderA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_PIN_B), doEncoderB, CHANGE);
   Wire.begin();
+
+  /*
+  //setup tft (expanderState is initialized with B10000001)
+  bitSet(MySignals.expanderState, EXP_TOUCH_CS);
+  MySignals.expanderWrite(MySignals.expanderState);
+  myTouch.InitTouch();
+  myTouch.setPrecision(PREC_MEDIUM);
+  */
+
   tft.begin(tft.readID());
   tft.setRotation(1);
   resetGUI(true, 1);
@@ -355,8 +363,8 @@ void setup() {
 }
 
 /*
- * loop() is an original method from Arduino required to run the program.
- * Called periodically to apply any changes in the selected window by calling the corresponding loop function.
+ * loop, original method from Arduino required to run the program.
+ * Checks if the window has to be changed and runs the loop functions for the 3 windows according to which is currently selected
  */
 void loop() {
   if(newWindow != currentWindow){
@@ -415,7 +423,5 @@ void loop() {
 
 /*
  * TODO
- * Create traffic light connection for ECG
- * Create global traffic light connection
- * Implement alternative to Body Position Sensor
+ * Create traffic light connection for EMG
  */
