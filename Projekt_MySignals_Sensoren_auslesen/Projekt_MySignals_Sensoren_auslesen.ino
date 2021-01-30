@@ -1,4 +1,4 @@
-//imnport of any necessary libraries
+//import of any necessary libraries
 #include <Adafruit_GFX_AS.h>
 #include <Adafruit_ILI9341_AS.h>
 #include <UTouch.h>
@@ -155,12 +155,12 @@ void showTrafficLight(int scale, int window){
     }
 }
 
-//Interrupt method for clockwise motion on the encoder
+//Interrupt procedure for clockwise motion on the encoder, for rest see setup
 void doEncoderA() {
   delay(1);
   
   if( digitalRead(encoderPinA) != A_set ) {
-    A_set = !A_set;
+    A_set = !A_set; //A_set is inverted
     if ( A_set && !B_set ){
       encoderPos += 1;
       if (lastReportedPos != encoderPos){
@@ -170,7 +170,7 @@ void doEncoderA() {
   }
 }
 
-//Interrupt method for counterclockwise motion on the encoder
+//Interrupt procedure for counterclockwise motion on the encoder, for rest see setup
 void doEncoderB() {
   delay(1);
   
@@ -326,9 +326,10 @@ void rareRefreshWindow3(){
  * Only called once at the start of the program.
  */
 void setup() {
-  //setup rotary encoder
+  //setup rotary encoder, defining both pins A and B as pullup - if a connection between either A or B has been made, it's potential is pulled to GND
   pinMode(encoderPinA, INPUT_PULLUP);
   pinMode(encoderPinB, INPUT_PULLUP);
+  //basic interrupt attachments which call their associated procedures, both register a change in signal value as rise and fall can both appear while turning in same direction
   attachInterrupt(digitalPinToInterrupt(18), doEncoderA, CHANGE);
   attachInterrupt(digitalPinToInterrupt(19), doEncoderB, CHANGE);
   
