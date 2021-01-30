@@ -6,6 +6,7 @@ Die GUI kann über einen Rotary Encoder umgeschaltet werden, die 3 Fenster in di
 - Body Position Sensor
 - Elektromyograph
 - Informationen
+
 Aufgrund der Corona Pandemie war der Zugang zu dem MySignals Board eingeschränkt und das Projekt konnte nicht vervollständigt werden.
 
 ## Projekt_Home_Version
@@ -13,6 +14,7 @@ Um weiter an dem Projekt zu arbeiten, wurde der Code geportet um nicht mehr vom 
 - Aktuell ungenutzt; Idee sind ein Gyroskop oder ein Pulsoximeter
 - Electrcardiograph
 - Informationen
+
 Um das Projekt einfacher umsetzen zu können, wurde eine zuvor selbst erstellte Platine verwendet. Diese dient der besseren Struktur der Verkabelung.
 Die Potentiometer auf der Platine dienen um den Graphen entlang der x-Achse zu skalieren und entlang der y-Achse zu skalieren und zu verschieben.
 ### Bild der "Home Version"
